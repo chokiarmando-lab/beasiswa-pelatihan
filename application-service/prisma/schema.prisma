@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Application {
+  id            Int @id @default(autoincrement())
+  userId        Int
+  scholarshipId Int
+
+  status ApplicationStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile   StudentProfile?
+  educationWork    EducationWork?
+  trainingInterest TrainingInterest?
+  documents        Document[]
+  verificationLogs VerificationLog[]
+  selectionResult  SelectionResult?
+
+  @@index([userId])
+  @@index([scholarshipId])
+  @@index([status])
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  VERIFICATION
+  REVISION
+  VERIFIED
+  REJECTED
+  SELECTED
+  NOT_SELECTED
+}
+
+model StudentProfile {
+  id            Int @id @default(autoincrement())
+  applicationId Int @unique
+
+  nik        String   @db.VarChar(20)
+  fullName   String   @db.VarChar(255)
+  birthPlace String   @db.VarChar(100)
+  birthDate  DateTime
+  gender     Gender
+  address    String   @db.Text
+  phone      String   @db.VarChar(20)
+  email      String   @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id])
+
+  @@index([nik])
+}
+
+model EducationWork {
+  id            Int @id @default(autoincrement())
+  applicationId Int @unique
+
+  educationLevel        String  @db.VarChar(100)
+  institution           String  @db.VarChar(255)
+  major                 String? @db.VarChar(255)
+  currentJob            String? @db.VarChar(255)
+  landOwnership         String? @db.VarChar(255)
+  plantationInvolvement String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id])
+}
+
+model TrainingInterest {
+  id            Int @id @default(autoincrement())
+  applicationId Int @unique
+
+  trainingProgram  String @db.VarChar(255)
+  trainingLocation String @db.VarChar(255)
+  motivation       String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id])
+}
+
+model Document {
+  id            Int @id @default(autoincrement())
+  applicationId Int
+
+  documentType DocumentType
+  fileName     String       @db.VarChar(255)
+  filePath     String       @db.VarChar(500)
+  mimeType     String       @db.VarChar(100)
+  fileSize     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id])
+
+  @@index([applicationId])
+}
+
+enum DocumentType {
+  KTP
+  KK
+  IJAZAH
+  REKOMENDASI
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model VerificationLog {
+  id Int @id @default(autoincrement())
+
+  applicationId Int
+
+  status ApplicationStatus
+
+  note String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model SelectionResult {
+  id Int @id @default(autoincrement())
+
+  applicationId Int @unique
+
+  score Float
+
+  note String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}

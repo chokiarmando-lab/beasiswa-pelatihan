@@ -1,0 +1,10 @@
+{
+  "name": "beasiswa-pelatihan",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix api-gateway\" \"npm run dev --prefix auth-service\" \"cd /d master-service && php artisan serve --port=3002\" \"npm run start:dev --prefix application-service\" \"npm run dev --prefix selection-service\" \"cd /d finance-service && php artisan serve --port=3005\" \"npm run dev --prefix frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

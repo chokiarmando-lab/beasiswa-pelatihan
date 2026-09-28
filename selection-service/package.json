@@ -1,0 +1,25 @@
+{
+  "name": "selection-service",
+  "version": "1.0.0",
+  "description": "Selection and Verification Service",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch server.js",
+    "start": "tsx server.js"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^7.10.0",
+    "tsx": "^4.20.0"
+  }
+}
