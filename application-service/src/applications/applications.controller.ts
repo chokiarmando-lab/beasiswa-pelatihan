@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 
 import { ApplicationsService } from './applications.service';
@@ -64,15 +65,23 @@ export class ApplicationsController {
 
 
 
-  @Get(':id')
-  findOne(
-    @Param('id',ParseIntPipe)
-    id:number
-  ){
+    @Get(':id')
+    findOne(
 
-    return this.applicationsService.findOne(id);
+      @Param('id',ParseIntPipe)
+      id:number,
 
-  }
+      @Req()
+      req:any
+
+    ){
+
+      return this.applicationsService.findOne(
+        id,
+        req.user
+      );
+
+    }
 
 
 

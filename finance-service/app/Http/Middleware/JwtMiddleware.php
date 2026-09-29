@@ -3,9 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Illuminate\Http\Request;
 
 class JwtMiddleware
 {
@@ -15,33 +15,36 @@ class JwtMiddleware
 
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
             return response()->json([
-                'message' => 'Unauthorized. Token is required.',
-            ], 401);
+                'message' => 'Unauthorized. Token is required.'
+            ],401);
         }
 
-        $token = substr($authHeader, 7);
+        $token = substr($authHeader,7);
 
         try {
+
             $decoded = JWT::decode(
                 $token,
                 new Key(env('JWT_SECRET'), 'HS256')
             );
 
-            $request->attributes->set(
-                'jwt_user',
-                (array) $decoded
-            );
+
+            $request->attributes->set('user', [
+                'id'=>$decoded->id,
+                'email'=>$decoded->email,
+                'role'=>$decoded->role
+            ]);
+
 
             return $next($request);
 
-        } catch (\Throwable $e) {
-            \Log::error('JWT Error', [
-                'message' => $e->getMessage(),
-            ]);
+
+        } catch(\Throwable $e){
 
             return response()->json([
-                'message' => 'Unauthorized. Invalid or expired token.',
-            ], 401);
+                'message'=>'Unauthorized. Invalid token'
+            ],401);
+
         }
     }
 }

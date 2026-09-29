@@ -3,13 +3,40 @@
   const dotenv = require("dotenv");
   const helmet = require("helmet");
   const { createProxyMiddleware } = require("http-proxy-middleware");
+  const rateLimit = require("express-rate-limit");
 
   dotenv.config();
 
   const app = express();
 
-  app.use(cors());
-  app.use(helmet());
+  app.use(cors({
+    origin:"http://localhost:5173",
+    credentials:true
+}));
+  app.use(
+ helmet({
+    contentSecurityPolicy:false
+ })
+);
+
+  const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 menit
+  max: 100, // maksimal 100 request/IP
+  standardHeaders: true,
+  legacyHeaders: false,
+
+  message: {
+    success: false,
+    message: "Too many requests, try again later"
+  }
+});
+
+
+app.use(limiter);
+
+
+app.use(express.json());
+
 
   const PORT = process.env.PORT || 3000;
 
@@ -36,9 +63,14 @@
   // Auth Service
   // =======================
 
+  const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10
+});
+
   app.use(
     "/api/auth",
-
+    loginLimiter,
     createProxyMiddleware({
 
       target: process.env.AUTH_SERVICE_URL,
@@ -46,11 +78,39 @@
       changeOrigin: true,
 
       pathRewrite: {
-
-        "^/":
-        "/api/auth/",
-
+        "^/": "/api/auth/"
       },
+
+      on: {
+
+        proxyReq(proxyReq, req) {
+          console.log(
+            "AUTH REQUEST:",
+            req.method,
+            req.originalUrl,
+            "=>",
+            proxyReq.path
+          );
+        },
+
+
+        proxyRes(proxyRes, req) {
+          console.log(
+            "AUTH RESPONSE:",
+            proxyRes.statusCode,
+            req.originalUrl
+          );
+        },
+
+
+        error(err) {
+          console.error(
+            "AUTH ERROR:",
+            err.message
+          );
+        }
+
+      }
 
     })
   );

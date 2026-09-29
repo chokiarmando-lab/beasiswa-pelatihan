@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 
@@ -58,39 +59,62 @@ export class ApplicationsService {
 
 }
 
-  async findOne(id: number) {
+  async findOne(
+    id: number,
+    user:any
+  ) {
 
 
-    return this.prisma.application.findUnique({
+    const application =
+      await this.prisma.application.findUnique({
+
+        where: {
+          id,
+        },
+
+        include: {
+
+          studentProfile: true,
+
+          educationWork: true,
+
+          trainingInterest: true,
+
+          documents: true,
+
+          verificationLogs:true
+
+        },
+
+      });
 
 
-      where: {
 
-        id,
+    if(!application){
 
-      },
+      throw new NotFoundException(
+        "Application not found"
+      );
 
-
-      include: {
-
-
-        studentProfile: true,
+    }
 
 
-        educationWork: true,
+
+    // Proteksi IDOR untuk peserta
+    if(
+      user.role === "peserta" &&
+      application.userId !== user.id
+    ){
+
+      throw new ForbiddenException(
+        "Forbidden"
+      );
+
+    }
 
 
-        trainingInterest: true,
 
-
-        documents: true,
-
-        verificationLogs:true
-      },
-
-
-    });
-
+    return application;
 
   }
 
@@ -223,7 +247,7 @@ export class ApplicationsService {
           applicationId:id,
 
           status,
-          
+
           note:
           note || `Status berubah menjadi ${status}`
 

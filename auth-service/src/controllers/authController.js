@@ -87,13 +87,25 @@ const login = async (req, res) => {
             expiresIn: "1h"
         }
     );
+    res.cookie(
+        "token",
+        token,
+        {
+            httpOnly:true,
+            secure:false,
+            sameSite:"strict",
+            maxAge:60 * 60 * 1000
+        }
+    );
+
+
     return res.status(200).json({
-        message: "Login Successful",
-        token: token,
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        message:"Login Successful",
+        token:token,
+        id:user.id,
+        name:user.name,
+        email:user.email,
+        role:user.role,
     });
 }
 

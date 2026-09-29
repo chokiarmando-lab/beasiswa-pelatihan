@@ -8,7 +8,7 @@ use App\Http\Controllers\DisbursementDetailController;
 
 
 
-Route::middleware('jwt')->group(function () {
+Route::middleware(['jwt','role:admin,bpdp'])->group(function () {
 
   
     Route::get('/disbursements', [
